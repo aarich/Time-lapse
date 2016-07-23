@@ -14,12 +14,12 @@ def wait():
     delay = (next_hour - datetime.now()).seconds
     sleep(delay)
 
-camera = PiCamera()
-camera.start_preview()
-wait()
-for filename in camera.capture_continuous('img{timestamp:%Y-%m-%d-%H-%M}.jpg'):
-    print('Captured %s' % filename)
-    wait()
+# camera = PiCamera()
+# camera.start_preview()
+# wait()
+# for filename in camera.capture_continuous('img{timestamp:%Y-%m-%d-%H-%M}.jpg'):
+    # print('Captured %s' % filename)
+    # wait()
 
 if __name__ == '__main__':
 	main()
