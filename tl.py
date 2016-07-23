@@ -9,7 +9,7 @@ def main():
 
 def wait():
     # Calculate the delay to the start of the next hour
-    next_hour = (datetime.now() + timedelta(hour=1)).replace(
+    next_hour = (datetime.now() + timedelta(0, 3600)).replace(
         minute=0, second=0, microsecond=0)
     delay = (next_hour - datetime.now()).seconds
     sleep(delay)
