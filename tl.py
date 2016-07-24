@@ -1,25 +1,61 @@
 from time import sleep
-from picamera import PiCamera
+import picamera
+import RPi.GPIO as GPIO
 from datetime import datetime, timedelta
 import sys
 
+def timelapse(numPhotos, motorDur, waitTime):
+
+	with picamera.PiCamera() as camera:
+		camera.start_preview()
+		sleep(2)
+		try:
+			for i, filename in enumerate(camera.capture_continuous('image{counter:02d}-{timestamp:%Y-%m-%d-%H-%M}.jpg')):
+				print('Captured %s' % filename)
+				if i == numPhotos:
+					break
+				# runMotor(motorDur)
+				sleep(waitTime * 3600 - motorDur)
+		finally:
+			camera.stop_preview()
+
+def runMotor(motorDur):
+	GPIO.setmode(GPIO.BCM)
+	GPIO.setup(25, GPIO.OUT)
+	p = GPIO.PWM(25, 50)    # PWM on port 25 at 50 Hertz  
+	p.start(50)             # start the PWM on 50 percent duty cycle  
+	sleep(motorDur) 
+	p.stop()
+
 def main():
-	if sys.argc < NUMARGS:
-		print "Expected usage:\n\tsudo python " + argv[0] + "delayToStart[hr] distToTravel[m] captureFreq[img/hr] speed[m/hr]"
+	if len(sys.argv) != 5:
+		print "Usage:\n\n  sudo python " + sys.argv[0] + " delayToStart[hr] distToTravel[m] captureFreq[img/hr] duration[hr]"
+		print "\nAll parameters must be greater than zero and can be floats."
+		return
 
-def wait():
-    # Calculate the delay to the start of the next hour
-    next_hour = (datetime.now() + timedelta(0, 3600)).replace(
-        minute=0, second=0, microsecond=0)
-    delay = (next_hour - datetime.now()).seconds
-    sleep(delay)
+	delayToStart = float(sys.argv[1])
+	distToTravel = float(sys.argv[2])
+	captureFreq = float(sys.argv[3])
+	duration = float(sys.argv[4])
 
-# camera = PiCamera()
-# camera.start_preview()
-# wait()
-# for filename in camera.capture_continuous('img{timestamp:%Y-%m-%d-%H-%M}.jpg'):
-    # print('Captured %s' % filename)
-    # wait()
+	if True in map(lambda x: x <= 0, [distToTravel, captureFreq, duration]):
+		print "Inputs must be positive (except for delayToStart). They can be floats."
+		return
+
+	# Sleep until start
+	sleep(delayToStart * 3600)
+
+	# determine motor run time after each photo
+	motorConstant = 5 # units are s / m
+	numPhotos = int(duration * captureFreq)
+	motorDur = motorConstant * (distToTravel / numPhotos)
+
+	# determine wait time after each photo
+	waitTime = duration / numPhotos
+
+	timelapse(numPhotos, motorDur, waitTime)
+
+	GPIO.cleanup()
 
 if __name__ == '__main__':
 	main()
