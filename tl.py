@@ -10,7 +10,7 @@ def timelapse(numPhotos, motorDur, waitTime):
 		camera.start_preview()
 		sleep(2)
 		try:
-			for i, filename in enumerate(camera.capture_continuous('image{counter:02d}-{timestamp:%Y-%m-%d-%H-%M}.jpg')):
+			for i, filename in enumerate(camera.capture_continuous('image{counter:02d}.jpg')):
 				print('Captured %s' % filename)
 				if i == numPhotos:
 					break
