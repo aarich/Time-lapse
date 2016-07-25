@@ -7,6 +7,7 @@ import sys
 def timelapse(numPhotos, motorDur, waitTime):
 
 	with picamera.PiCamera() as camera:
+		camera.resolution = (1290, 1080)
 		camera.start_preview()
 		sleep(2)
 		try:
